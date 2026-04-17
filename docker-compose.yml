@@ -1,0 +1,38 @@
+services:
+  openrouter-exporter:
+    build: .
+    ports:
+      - "9837:9837"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_SCRAPE_INTERVAL=${OPENROUTER_SCRAPE_INTERVAL:-5m}
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.4.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./examples/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - openrouter-exporter
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.6.1
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./examples/grafana:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
