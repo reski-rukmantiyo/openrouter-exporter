@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Exporter",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": ["--web.listen-address=:9837", "--scrape.interval=5m"],
+      "env": {
+        "OPENROUTER_API_KEY": ""
+      },
+      "showLog": false
+    },
+    {
+      "name": "Debug Exporter (with API Key)",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": ["--web.listen-address=:9837"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Debug Current File",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${file}"
+    }
+  ]
+}

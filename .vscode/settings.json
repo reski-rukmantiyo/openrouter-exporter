@@ -1,0 +1,6 @@
+{
+  "go.toolsEnvVars": {
+    "GOFLAGS": "-mod=mod"
+  },
+  "editor.formatOnSave": true
+}
