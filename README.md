@@ -15,26 +15,52 @@ This exporter periodically scrapes the OpenRouter API and exposes model-level me
 
 ## Metrics
 
-All pricing metrics carry the labels `model_id`, `provider_name`, `tag`, and `quantization`.
+### Pricing
+
+Labels: `model_id`, `provider_name`, `tag`, `quantization`
 
 | Metric | Type | Description |
 |---|---|---|
-| `openrouter_model_prompt_price_dollars_per_million_tokens` | gauge | Prompt price ($/M tokens) |
-| `openrouter_model_completion_price_dollars_per_million_tokens` | gauge | Completion price ($/M tokens) |
-| `openrouter_model_input_cache_read_price_dollars_per_million_tokens` | gauge | Cached input price ($/M tokens) |
-| `openrouter_endpoint_uptime_percentage_last_5m` | gauge | Uptime % over 5 minutes |
-| `openrouter_endpoint_uptime_percentage_last_30m` | gauge | Uptime % over 30 minutes |
-| `openrouter_endpoint_uptime_percentage_last_1d` | gauge | Uptime % over 1 day |
-| `openrouter_endpoint_throughput_tokens_per_second` | gauge | Throughput in tokens/s (API key required) |
-| `openrouter_endpoint_latency_milliseconds` | gauge | Latency in ms (API key required) |
-| `openrouter_model_info` | gauge | Static metadata (value=1, carries labels) |
-| `openrouter_scrape_duration_seconds` | gauge | Last scrape duration |
-| `openrouter_scrape_errors_total` | gauge | Errors in last scrape |
-| `openrouter_models_scraped` | gauge | Models in last scrape |
-| `openrouter_endpoints_scraped` | gauge | Endpoints in last scrape |
-| `openrouter_scrape_timestamp_seconds` | gauge | Timestamp of last successful scrape |
+| `openrouter_model_input_price_dollars_per_million_tokens` | gauge | Price per million input tokens in USD |
+| `openrouter_model_output_price_dollars_per_million_tokens` | gauge | Price per million output tokens in USD |
+| `openrouter_model_input_cache_read_price_dollars_per_million_tokens` | gauge | Price per million cached input tokens in USD |
 
-Throughput and latency metrics additionally carry a `quantile` label (`p50`, `p75`, `p90`, `p99`).
+### Uptime
+
+Labels: `model_id`, `provider_name`, `tag`, `quantization`
+
+| Metric | Type | Description |
+|---|---|---|
+| `openrouter_endpoint_uptime_percentage_last_5m` | gauge | Endpoint uptime percentage over the last 5 minutes |
+| `openrouter_endpoint_uptime_percentage_last_30m` | gauge | Endpoint uptime percentage over the last 30 minutes |
+| `openrouter_endpoint_uptime_percentage_last_1d` | gauge | Endpoint uptime percentage over the last day |
+
+### Throughput & Latency
+
+Labels: `model_id`, `provider_name`, `tag`, `quantization`, `quantile` (`p50`, `p75`, `p90`, `p99`)
+
+| Metric | Type | Description |
+|---|---|---|
+| `openrouter_endpoint_throughput_tokens_per_second` | gauge | Throughput in tokens per second (requires API key) |
+| `openrouter_endpoint_latency_milliseconds` | gauge | Latency in milliseconds (requires API key) |
+
+### Model Info
+
+| Metric | Type | Description |
+|---|---|---|
+| `openrouter_model_info` | gauge | Static model metadata; value is always 1 |
+
+Labels: `model_id`, `model_name`, `context_length`, `modality`, `tokenizer`, `input_modalities`, `output_modalities`
+
+### Scrape Metadata
+
+| Metric | Type | Description |
+|---|---|---|
+| `openrouter_scrape_duration_seconds` | gauge | Duration of the last cache refresh in seconds |
+| `openrouter_scrape_errors_total` | gauge | Total number of endpoint fetch errors in the last cache refresh |
+| `openrouter_models_scraped` | gauge | Number of models in the last cache refresh |
+| `openrouter_endpoints_scraped` | gauge | Number of endpoints in the last cache refresh |
+| `openrouter_scrape_timestamp_seconds` | gauge | Unix timestamp of the last successful cache refresh |
 
 ## Configuration
 
