@@ -1,0 +1,216 @@
+{
+  "annotations": { "list": [] },
+  "description": "OpenRouter pricing and latency per provider and model",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Pricing",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "title": "Input Price",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "expr": "openrouter_model_input_price_dollars_per_million_tokens{provider_name=~\"$provider_name\", model_id=~\"$model_id\"}",
+          "legendFormat": "{{provider_name}} / {{model_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "$/M tokens",
+          "decimals": 4,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "min", "max"] }
+      }
+    },
+    {
+      "title": "Output Price",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 1 },
+      "targets": [
+        {
+          "expr": "openrouter_model_output_price_dollars_per_million_tokens{provider_name=~\"$provider_name\", model_id=~\"$model_id\"}",
+          "legendFormat": "{{provider_name}} / {{model_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "$/M tokens",
+          "decimals": 4,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "min", "max"] }
+      }
+    },
+    {
+      "title": "Cache Read Price",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 1 },
+      "targets": [
+        {
+          "expr": "openrouter_model_input_cache_read_price_dollars_per_million_tokens{provider_name=~\"$provider_name\", model_id=~\"$model_id\"}",
+          "legendFormat": "{{provider_name}} / {{model_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "$/M tokens",
+          "decimals": 4,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "min", "max"] }
+      }
+    },
+
+    {
+      "title": "Latency",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 11 },
+      "collapsed": false
+    },
+    {
+      "title": "Endpoint Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "openrouter_endpoint_latency_milliseconds{provider_name=~\"$provider_name\", model_id=~\"$model_id\", quantile=~\"$quantile\"}",
+          "legendFormat": "{{provider_name}} / {{model_id}} (p{{quantile}})",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "decimals": 1,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "min", "max", "mean"] }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 40,
+  "tags": ["openrouter", "prometheus"],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "selected": true,
+          "text": "Prometheus",
+          "value": "Prometheus"
+        }
+      },
+      {
+        "name": "provider_name",
+        "type": "query",
+        "datasource": { "uid": "${datasource}" },
+        "query": "label_values(openrouter_model_input_price_dollars_per_million_tokens, provider_name)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "model_id",
+        "type": "query",
+        "datasource": { "uid": "${datasource}" },
+        "query": "label_values(openrouter_model_info{provider_name=~\"$provider_name\"}, model_id)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "quantile",
+        "type": "query",
+        "datasource": { "uid": "${datasource}" },
+        "query": "label_values(openrouter_endpoint_latency_milliseconds, quantile)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "OpenRouter Pricing & Latency",
+  "uid": "openrouter-pricing-latency",
+  "version": 1
+}
