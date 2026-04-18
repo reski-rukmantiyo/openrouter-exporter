@@ -1,6 +1,7 @@
 services:
   openrouter-exporter:
     build: .
+    pull_policy: build
     ports:
       - "9837:9837"
     environment:
