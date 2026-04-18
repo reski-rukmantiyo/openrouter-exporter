@@ -29,7 +29,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./examples/grafana:/etc/grafana/provisioning/dashboards:ro
+      # - ./examples/grafana:/etc/grafana/provisioning/dashboards:ro
     depends_on:
       - prometheus
     restart: unless-stopped
