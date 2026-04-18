@@ -50,6 +50,13 @@ Each flag has a corresponding environment variable that takes precedence if set.
 | `-api.key` | `OPENROUTER_API_KEY` | | OpenRouter API key (optional) |
 | `-base-url` | `OPENROUTER_BASE_URL` | `https://openrouter.ai` | OpenRouter base URL |
 
+## Requirements
+
+- **No API key needed** for pricing, uptime, and model info metrics — these are available from the public OpenRouter API.
+- **API key required** for throughput (`openrouter_endpoint_throughput_tokens_per_second`) and latency (`openrouter_endpoint_latency_milliseconds`) metrics — the OpenRouter `/api/v1/models/{id}/endpoints` endpoint only returns `throughput_last_30m` and `latency_last_30m` data for authenticated requests. Without a key, these metrics will not be emitted at all.
+
+Get an API key from [openrouter.ai/keys](https://openrouter.ai/keys).
+
 ## Quick Start
 
 ### Docker Compose
