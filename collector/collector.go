@@ -21,8 +21,8 @@ func New(c *cache.Cache, logger *slog.Logger) *OpenRouterCollector {
 }
 
 func (c *OpenRouterCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- MetricPromptPrice
-	ch <- MetricCompletionPrice
+	ch <- MetricInputPrice
+	ch <- MetricOutputPrice
 	ch <- MetricCacheReadPrice
 	ch <- MetricUptime30m
 	ch <- MetricUptime5m
@@ -86,16 +86,16 @@ func (c *OpenRouterCollector) emitEndpointMetrics(ch chan<- prometheus.Metric, m
 	quant := ep.Quantization
 
 	// Pricing
-	if price, err := parsePrice(ep.Pricing.Prompt); err == nil {
-		ch <- prometheus.MustNewConstMetric(MetricPromptPrice, prometheus.GaugeValue, price, modelID, provider, tag, quant)
+	if price, err := parsePrice(ep.Pricing.Input); err == nil {
+		ch <- prometheus.MustNewConstMetric(MetricInputPrice, prometheus.GaugeValue, price, modelID, provider, tag, quant)
 	} else {
-		c.logger.Warn("invalid prompt price", "model", modelID, "provider", provider, "value", ep.Pricing.Prompt, "error", err)
+		c.logger.Warn("invalid input price", "model", modelID, "provider", provider, "value", ep.Pricing.Input, "error", err)
 	}
 
-	if price, err := parsePrice(ep.Pricing.Completion); err == nil {
-		ch <- prometheus.MustNewConstMetric(MetricCompletionPrice, prometheus.GaugeValue, price, modelID, provider, tag, quant)
+	if price, err := parsePrice(ep.Pricing.Output); err == nil {
+		ch <- prometheus.MustNewConstMetric(MetricOutputPrice, prometheus.GaugeValue, price, modelID, provider, tag, quant)
 	} else {
-		c.logger.Warn("invalid completion price", "model", modelID, "provider", provider, "value", ep.Pricing.Completion, "error", err)
+		c.logger.Warn("invalid output price", "model", modelID, "provider", provider, "value", ep.Pricing.Output, "error", err)
 	}
 
 	if ep.Pricing.InputCacheRead != nil {

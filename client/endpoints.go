@@ -34,8 +34,8 @@ type Endpoint struct {
 }
 
 type EndpointPricing struct {
-	Prompt         string  `json:"prompt"`
-	Completion     string  `json:"completion"`
+	Input          string  `json:"prompt"`
+	Output         string  `json:"completion"`
 	InputCacheRead *string `json:"input_cache_read,omitempty"`
 	Discount       float64 `json:"discount"`
 }

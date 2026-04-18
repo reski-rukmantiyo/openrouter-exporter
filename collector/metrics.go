@@ -3,14 +3,14 @@ package collector
 import "github.com/prometheus/client_golang/prometheus"
 
 var (
-	MetricPromptPrice = prometheus.NewDesc(
-		"openrouter_model_prompt_price_dollars_per_million_tokens",
-		"Price per million prompt tokens in USD",
+	MetricInputPrice = prometheus.NewDesc(
+		"openrouter_model_input_price_dollars_per_million_tokens",
+		"Price per million input tokens in USD",
 		[]string{"model_id", "provider_name", "tag", "quantization"}, nil,
 	)
-	MetricCompletionPrice = prometheus.NewDesc(
-		"openrouter_model_completion_price_dollars_per_million_tokens",
-		"Price per million completion tokens in USD",
+	MetricOutputPrice = prometheus.NewDesc(
+		"openrouter_model_output_price_dollars_per_million_tokens",
+		"Price per million output tokens in USD",
 		[]string{"model_id", "provider_name", "tag", "quantization"}, nil,
 	)
 	MetricCacheReadPrice = prometheus.NewDesc(

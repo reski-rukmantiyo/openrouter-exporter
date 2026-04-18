@@ -31,8 +31,8 @@ type Architecture struct {
 }
 
 type Pricing struct {
-	Prompt            string  `json:"prompt"`
-	Completion        string  `json:"completion"`
+	Input             string  `json:"prompt"`
+	Output            string  `json:"completion"`
 	InputCacheRead    *string `json:"input_cache_read,omitempty"`
 	InputCacheWrite   *string `json:"input_cache_write,omitempty"`
 	WebSearch         *string `json:"web_search,omitempty"`
