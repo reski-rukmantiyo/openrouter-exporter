@@ -37,11 +37,12 @@ func (c *OpenRouterCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- MetricScrapeTimestamp
 	ch <- MetricActivityRequests
 	ch <- MetricActivityPromptTokens
+	ch <- MetricActivityOutputTokens
 	ch <- MetricActivityCompletionTokens
-	ch <- MetricActivityToolCalls
 	ch <- MetricActivityCacheHitTokens
 	ch <- MetricActivityReasoningTokens
-	ch <- MetricActivityReasoningRatio
+	ch <- MetricActivityInputOutputRatio
+	ch <- MetricActivityEstCostDollars
 	ch <- MetricActivityScrapeDuration
 	ch <- MetricActivityScrapeErrors
 	ch <- MetricActivityScrapeTimestamp
@@ -74,11 +75,10 @@ func (c *OpenRouterCollector) Collect(ch chan<- prometheus.Metric) {
 		)
 	}
 
-	// Per-endpoint metrics — deduplicate by tag across models
+	// Per-endpoint metrics - deduplicate by tag across models
 	seen := make(map[string]bool)
 	for modelID, epResp := range data.Endpoints {
 		for _, ep := range epResp.Data.Endpoints {
-			// Deduplicate: same tag can appear under different model IDs
 			key := modelID + "/" + ep.Tag
 			if seen[key] {
 				continue
@@ -89,24 +89,37 @@ func (c *OpenRouterCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	// Activity metrics
+	// Activity metrics - emit only the latest date per model
 	if data.Activity != nil {
 		ch <- prometheus.MustNewConstMetric(MetricActivityScrapeErrors, prometheus.GaugeValue, float64(data.ActivityErrors))
 
 		for modelID, records := range data.Activity {
-			for _, r := range records {
-				date := strings.SplitN(r.Date, " ", 2)[0]
-				ch <- prometheus.MustNewConstMetric(MetricActivityRequests, prometheus.GaugeValue, float64(r.Count), modelID, date)
-				ch <- prometheus.MustNewConstMetric(MetricActivityPromptTokens, prometheus.GaugeValue, float64(r.TotalPromptTokens), modelID, date)
-				ch <- prometheus.MustNewConstMetric(MetricActivityCompletionTokens, prometheus.GaugeValue, float64(r.TotalCompletionTokens), modelID, date)
-				ch <- prometheus.MustNewConstMetric(MetricActivityToolCalls, prometheus.GaugeValue, float64(r.TotalToolCalls), modelID, date)
-				ch <- prometheus.MustNewConstMetric(MetricActivityCacheHitTokens, prometheus.GaugeValue, float64(r.TotalNativeTokensCached), modelID, date)
-				ch <- prometheus.MustNewConstMetric(MetricActivityReasoningTokens, prometheus.GaugeValue, float64(r.TotalNativeTokensReasoning), modelID, date)
+			if len(records) == 0 {
+				continue
+			}
+			r := records[0] // analytics records are sorted newest-first
+			date := strings.SplitN(r.Date, " ", 2)[0]
 
-				if r.TotalCompletionTokens > 0 {
-					ratio := float64(r.TotalNativeTokensReasoning) / float64(r.TotalCompletionTokens)
-					ch <- prometheus.MustNewConstMetric(MetricActivityReasoningRatio, prometheus.GaugeValue, ratio, modelID, date)
-				}
+			outputTokens := r.TotalCompletionTokens
+			completionTokens := outputTokens - r.TotalNativeTokensReasoning
+			if completionTokens < 0 {
+				completionTokens = 0
+			}
+
+			ch <- prometheus.MustNewConstMetric(MetricActivityRequests, prometheus.GaugeValue, float64(r.Count), modelID, date)
+			ch <- prometheus.MustNewConstMetric(MetricActivityPromptTokens, prometheus.GaugeValue, float64(r.TotalPromptTokens), modelID, date)
+			ch <- prometheus.MustNewConstMetric(MetricActivityOutputTokens, prometheus.GaugeValue, float64(outputTokens), modelID, date)
+			ch <- prometheus.MustNewConstMetric(MetricActivityCompletionTokens, prometheus.GaugeValue, float64(completionTokens), modelID, date)
+			ch <- prometheus.MustNewConstMetric(MetricActivityCacheHitTokens, prometheus.GaugeValue, float64(r.TotalNativeTokensCached), modelID, date)
+			ch <- prometheus.MustNewConstMetric(MetricActivityReasoningTokens, prometheus.GaugeValue, float64(r.TotalNativeTokensReasoning), modelID, date)
+
+			if outputTokens > 0 {
+				ratio := float64(r.TotalPromptTokens) / float64(outputTokens)
+				ch <- prometheus.MustNewConstMetric(MetricActivityInputOutputRatio, prometheus.GaugeValue, ratio, modelID, date)
+			}
+
+			if cost, ok := c.estCost(data, modelID, r); ok {
+				ch <- prometheus.MustNewConstMetric(MetricActivityEstCostDollars, prometheus.GaugeValue, cost, modelID, date)
 			}
 		}
 	}
@@ -156,6 +169,28 @@ func (c *OpenRouterCollector) emitEndpointMetrics(ch chan<- prometheus.Metric, m
 		ch <- prometheus.MustNewConstMetric(MetricLatency, prometheus.GaugeValue, ep.LatencyLast30m.P90*1000, modelID, provider, tag, quant, "p90")
 		ch <- prometheus.MustNewConstMetric(MetricLatency, prometheus.GaugeValue, ep.LatencyLast30m.P99*1000, modelID, provider, tag, quant, "p99")
 	}
+}
+
+func (c *OpenRouterCollector) estCost(data *cache.CachedData, modelID string, r cache.ActivityRecord) (float64, bool) {
+	epResp, ok := data.Endpoints[modelID]
+	if !ok || len(epResp.Data.Endpoints) == 0 {
+		return 0, false
+	}
+	ep := epResp.Data.Endpoints[0]
+
+	inputPrice, err := strconv.ParseFloat(ep.Pricing.Input, 64)
+	if err != nil {
+		return 0, false
+	}
+	outputPrice, err := strconv.ParseFloat(ep.Pricing.Output, 64)
+	if err != nil {
+		return 0, false
+	}
+
+	// Prices are in USD per million tokens
+	cost := float64(r.TotalPromptTokens)*inputPrice/1_000_000 +
+		float64(r.TotalCompletionTokens)*outputPrice/1_000_000
+	return cost, true
 }
 
 func parsePrice(s string) (float64, error) {

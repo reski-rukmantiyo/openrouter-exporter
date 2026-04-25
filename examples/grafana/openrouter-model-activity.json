@@ -14,112 +14,82 @@
       "collapsed": false
     },
     {
-      "title": "Daily Requests",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 1 },
+      "title": "Requests",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 1 },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "none",
-          "decimals": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max"]
-        }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_requests{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "title": "Daily Tool Calls",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 1 },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "none",
-          "decimals": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max"]
-        }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_tool_calls{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "title": "Reasoning Ratio",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 1 },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "percentunit",
+          "unit": "short",
           "decimals": 2
         },
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max", "mean"]
-        }
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_reasoning_ratio{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
+          "expr": "openrouter_model_activity_requests{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Input / Output Ratio",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "openrouter_model_activity_input_output_ratio{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Est. Cost",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "currencyUSD",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "openrouter_model_activity_est_cost_dollars{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
           "refId": "A"
         }
       ]
@@ -127,159 +97,146 @@
     {
       "title": "Tokens",
       "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 11 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
       "collapsed": false
     },
     {
-      "title": "Prompt Tokens",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 12 },
+      "title": "Input Tokens",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 10 },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "none",
-          "decimals": 0
+          "unit": "short",
+          "decimals": 2
         },
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max"]
-        }
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_prompt_tokens{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
+          "expr": "openrouter_model_activity_prompt_tokens{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Output Tokens",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 10 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "openrouter_model_activity_output_tokens{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
           "refId": "A"
         }
       ]
     },
     {
       "title": "Completion Tokens",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 12 },
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 10 },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "none",
-          "decimals": 0
+          "unit": "short",
+          "decimals": 2
         },
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max"]
-        }
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_completion_tokens{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
+          "expr": "openrouter_model_activity_completion_tokens{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
           "refId": "A"
         }
       ]
     },
     {
-      "title": "Cache & Reasoning",
+      "title": "Cached Tokens",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 10 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "openrouter_model_activity_cache_hit_tokens{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Reasoning",
       "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
       "collapsed": false
     },
     {
-      "title": "Cache Hit Tokens",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 23 },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "none",
-          "decimals": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max"]
-        }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_cache_hit_tokens{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
       "title": "Reasoning Tokens",
-      "type": "timeseries",
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 23 },
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 19 },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": true
-          },
-          "unit": "none",
-          "decimals": 0
+          "unit": "short",
+          "decimals": 2
         },
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "desc" },
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": ["lastNotNull", "min", "max"]
-        }
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "openrouter_model_activity_reasoning_tokens{model_id=~\"$model_id\", date=~\"$date\"}",
-          "legendFormat": "{{model_id}} / {{date}}",
+          "expr": "openrouter_model_activity_reasoning_tokens{model_id=~\"$model_id\"}",
+          "legendFormat": "{{model_id}}",
           "refId": "A"
         }
       ]
@@ -325,33 +282,10 @@
         "multi": true,
         "includeAll": true,
         "allValue": ".*"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
-        "definition": "label_values(openrouter_model_activity_requests{model_id=~\"$model_id\"}, date)",
-        "name": "date",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(openrouter_model_activity_requests{model_id=~\"$model_id\"}, date)",
-          "refId": "VariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "sort": 1,
-        "type": "query",
-        "multi": true,
-        "includeAll": true,
-        "allValue": ".*"
       }
     ]
   },
-  "time": { "from": "now-7d", "to": "now" },
+  "time": { "from": "now-6h", "to": "now" },
   "timepicker": {},
   "timezone": "",
   "title": "OpenRouter Model Activity",

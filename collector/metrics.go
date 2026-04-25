@@ -86,17 +86,17 @@ var (
 	)
 	MetricActivityPromptTokens = prometheus.NewDesc(
 		"openrouter_model_activity_prompt_tokens",
-		"Total prompt tokens per day for a model",
+		"Total prompt (input) tokens per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityOutputTokens = prometheus.NewDesc(
+		"openrouter_model_activity_output_tokens",
+		"Total output tokens per day for a model (completion + reasoning)",
 		[]string{"model_id", "date"}, nil,
 	)
 	MetricActivityCompletionTokens = prometheus.NewDesc(
 		"openrouter_model_activity_completion_tokens",
-		"Total completion tokens per day for a model",
-		[]string{"model_id", "date"}, nil,
-	)
-	MetricActivityToolCalls = prometheus.NewDesc(
-		"openrouter_model_activity_tool_calls",
-		"Total tool calls per day for a model",
+		"Completion tokens per day (output minus reasoning)",
 		[]string{"model_id", "date"}, nil,
 	)
 	MetricActivityCacheHitTokens = prometheus.NewDesc(
@@ -109,9 +109,14 @@ var (
 		"Total reasoning tokens per day for a model",
 		[]string{"model_id", "date"}, nil,
 	)
-	MetricActivityReasoningRatio = prometheus.NewDesc(
-		"openrouter_model_activity_reasoning_ratio",
-		"Ratio of reasoning tokens to completion tokens per day",
+	MetricActivityInputOutputRatio = prometheus.NewDesc(
+		"openrouter_model_activity_input_output_ratio",
+		"Ratio of prompt tokens to output tokens per day",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityEstCostDollars = prometheus.NewDesc(
+		"openrouter_model_activity_est_cost_dollars",
+		"Estimated cost in USD based on the first endpoint pricing for the model",
 		[]string{"model_id", "date"}, nil,
 	)
 
