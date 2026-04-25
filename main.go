@@ -32,8 +32,8 @@ func main() {
 	c := cache.New(apiClient, cfg.ScrapeInterval, logger)
 
 	if len(cfg.ActivityModels) > 0 && cfg.ActivitySessionCookie != "" {
-		c.SetActivityConfig(cfg.ActivityModels, cfg.ActivitySessionCookie)
-		logger.Info("activity scraping configured", "models", cfg.ActivityModels)
+		c.SetActivityConfig(cfg.ActivityModels, cfg.ActivitySessionCookie, cfg.ActivityScrapeInterval)
+		logger.Info("activity scraping configured", "models", cfg.ActivityModels, "interval", cfg.ActivityScrapeInterval)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

@@ -29,14 +29,15 @@ type Endpoint = client.Endpoint
 type ActivityRecord = client.ActivityRecord
 
 type Cache struct {
-	mu             sync.RWMutex
-	data           *CachedData
-	client         *client.OpenRouterClient
-	interval       time.Duration
-	stopCh         chan struct{}
-	logger         *slog.Logger
-	activityModels []string
-	sessionCookie  string
+	mu                    sync.RWMutex
+	data                  *CachedData
+	client                *client.OpenRouterClient
+	interval              time.Duration
+	activityInterval      time.Duration
+	stopCh                chan struct{}
+	logger                *slog.Logger
+	activityModels        []string
+	sessionCookie         string
 }
 
 func New(c *client.OpenRouterClient, interval time.Duration, logger *slog.Logger) *Cache {
@@ -48,9 +49,10 @@ func New(c *client.OpenRouterClient, interval time.Duration, logger *slog.Logger
 	}
 }
 
-func (c *Cache) SetActivityConfig(models []string, sessionCookie string) {
+func (c *Cache) SetActivityConfig(models []string, sessionCookie string, interval time.Duration) {
 	c.activityModels = models
 	c.sessionCookie = sessionCookie
+	c.activityInterval = interval
 }
 
 func (c *Cache) Start(ctx context.Context) error {
@@ -76,12 +78,22 @@ func (c *Cache) run(ctx context.Context) {
 	ticker := time.NewTicker(c.interval)
 	defer ticker.Stop()
 
+	var activityTicker *time.Ticker
+	var activityCh <-chan time.Time
+	if len(c.activityModels) > 0 && c.sessionCookie != "" {
+		activityTicker = time.NewTicker(c.activityInterval)
+		activityCh = activityTicker.C
+		defer activityTicker.Stop()
+	}
+
 	for {
 		select {
 		case <-ticker.C:
 			if err := c.refresh(ctx); err != nil {
 				c.logger.Error("cache refresh failed", "error", err)
 			}
+		case <-activityCh:
+			c.refreshActivity(ctx)
 		case <-c.stopCh:
 			return
 		case <-ctx.Done():
@@ -143,4 +155,28 @@ func (c *Cache) refresh(ctx context.Context) error {
 	)
 
 	return nil
+}
+
+func (c *Cache) refreshActivity(ctx context.Context) {
+	if len(c.activityModels) == 0 || c.sessionCookie == "" {
+		return
+	}
+
+	activityResult, err := c.client.FetchAllActivity(ctx, c.activityModels, c.sessionCookie)
+	if err != nil {
+		c.logger.Error("activity refresh failed", "error", err)
+		return
+	}
+
+	c.mu.Lock()
+	if c.data != nil {
+		c.data.Activity = activityResult.Activity
+		c.data.ActivityErrors = activityResult.Errors
+	}
+	c.mu.Unlock()
+
+	c.logger.Info("activity refreshed",
+		"models", len(activityResult.Activity),
+		"errors", activityResult.Errors,
+	)
 }

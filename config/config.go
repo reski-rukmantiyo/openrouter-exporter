@@ -18,8 +18,9 @@ type Config struct {
 	BaseURL        string
 	MetricsPath    string
 
-	ActivityModels        []string
-	ActivitySessionCookie string
+	ActivityModels         []string
+	ActivitySessionCookie  string
+	ActivityScrapeInterval time.Duration
 }
 
 func Load() (*Config, error) {
@@ -33,6 +34,7 @@ func Load() (*Config, error) {
 	flag.StringVar(&cfg.BaseURL, "base-url", "https://openrouter.ai", "OpenRouter base URL")
 	flag.StringVar(&cfg.MetricsPath, "web.metrics-path", "/metrics", "Path under which to expose metrics")
 	flag.StringVar(&cfg.ActivitySessionCookie, "activity.session-cookie", "", "OpenRouter __session cookie for activity scraping")
+	flag.DurationVar(&cfg.ActivityScrapeInterval, "activity.scrape-interval", 15*time.Minute, "How often to scrape activity data")
 
 	var activityModels string
 	flag.StringVar(&activityModels, "activity.models", "", "Comma-separated list of model slugs to scrape activity for")
@@ -83,6 +85,13 @@ func Load() (*Config, error) {
 	if v := os.Getenv("OPENROUTER_ACTIVITY_MODELS"); v != "" {
 		cfg.ActivityModels = strings.Split(v, ",")
 	}
+	if v := os.Getenv("OPENROUTER_ACTIVITY_SCRAPE_INTERVAL"); v != "" {
+		d, err := time.ParseDuration(v)
+		if err != nil {
+			return nil, fmt.Errorf("invalid OPENROUTER_ACTIVITY_SCRAPE_INTERVAL: %w", err)
+		}
+		cfg.ActivityScrapeInterval = d
+	}
 
 	// Validate
 	if cfg.MaxConcurrency < 1 {
@@ -90,6 +99,9 @@ func Load() (*Config, error) {
 	}
 	if cfg.ScrapeInterval < 10*time.Second {
 		return nil, fmt.Errorf("scrape.interval must be >= 10s, got %s", cfg.ScrapeInterval)
+	}
+	if cfg.ActivityScrapeInterval < 10*time.Second {
+		return nil, fmt.Errorf("activity.scrape-interval must be >= 10s, got %s", cfg.ActivityScrapeInterval)
 	}
 
 	return cfg, nil
