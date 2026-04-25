@@ -77,4 +77,57 @@ var (
 		"Unix timestamp of the last successful cache refresh",
 		nil, nil,
 	)
+
+	// Activity metrics
+	MetricActivityRequests = prometheus.NewDesc(
+		"openrouter_model_activity_requests",
+		"Total requests per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityPromptTokens = prometheus.NewDesc(
+		"openrouter_model_activity_prompt_tokens",
+		"Total prompt tokens per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityCompletionTokens = prometheus.NewDesc(
+		"openrouter_model_activity_completion_tokens",
+		"Total completion tokens per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityToolCalls = prometheus.NewDesc(
+		"openrouter_model_activity_tool_calls",
+		"Total tool calls per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityCacheHitTokens = prometheus.NewDesc(
+		"openrouter_model_activity_cache_hit_tokens",
+		"Total cached tokens per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityReasoningTokens = prometheus.NewDesc(
+		"openrouter_model_activity_reasoning_tokens",
+		"Total reasoning tokens per day for a model",
+		[]string{"model_id", "date"}, nil,
+	)
+	MetricActivityReasoningRatio = prometheus.NewDesc(
+		"openrouter_model_activity_reasoning_ratio",
+		"Ratio of reasoning tokens to completion tokens per day",
+		[]string{"model_id", "date"}, nil,
+	)
+
+	MetricActivityScrapeDuration = prometheus.NewDesc(
+		"openrouter_activity_scrape_duration_seconds",
+		"Duration of the last activity scrape in seconds",
+		nil, nil,
+	)
+	MetricActivityScrapeErrors = prometheus.NewDesc(
+		"openrouter_activity_scrape_errors_total",
+		"Total number of activity fetch errors in the last refresh",
+		nil, nil,
+	)
+	MetricActivityScrapeTimestamp = prometheus.NewDesc(
+		"openrouter_activity_scrape_timestamp_seconds",
+		"Unix timestamp of the last successful activity refresh",
+		nil, nil,
+	)
 )

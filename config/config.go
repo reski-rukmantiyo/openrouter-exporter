@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,6 +17,9 @@ type Config struct {
 	APIKey         string
 	BaseURL        string
 	MetricsPath    string
+
+	ActivityModels        []string
+	ActivitySessionCookie string
 }
 
 func Load() (*Config, error) {
@@ -28,8 +32,16 @@ func Load() (*Config, error) {
 	flag.StringVar(&cfg.APIKey, "api.key", "", "OpenRouter API key (optional, enables throughput/latency metrics)")
 	flag.StringVar(&cfg.BaseURL, "base-url", "https://openrouter.ai", "OpenRouter base URL")
 	flag.StringVar(&cfg.MetricsPath, "web.metrics-path", "/metrics", "Path under which to expose metrics")
+	flag.StringVar(&cfg.ActivitySessionCookie, "activity.session-cookie", "", "OpenRouter __session cookie for activity scraping")
+
+	var activityModels string
+	flag.StringVar(&activityModels, "activity.models", "", "Comma-separated list of model slugs to scrape activity for")
 
 	flag.Parse()
+
+	if activityModels != "" {
+		cfg.ActivityModels = strings.Split(activityModels, ",")
+	}
 
 	// Override from environment variables if set
 	if v := os.Getenv("OPENROUTER_LISTEN_ADDR"); v != "" {
@@ -64,6 +76,12 @@ func Load() (*Config, error) {
 	}
 	if v := os.Getenv("OPENROUTER_METRICS_PATH"); v != "" {
 		cfg.MetricsPath = v
+	}
+	if v := os.Getenv("OPENROUTER_ACTIVITY_SESSION_COOKIE"); v != "" {
+		cfg.ActivitySessionCookie = v
+	}
+	if v := os.Getenv("OPENROUTER_ACTIVITY_MODELS"); v != "" {
+		cfg.ActivityModels = strings.Split(v, ",")
 	}
 
 	// Validate

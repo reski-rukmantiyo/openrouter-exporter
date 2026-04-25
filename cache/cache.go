@@ -13,25 +13,30 @@ import (
 type CachedData struct {
 	Models         []Model
 	Endpoints      map[string]*EndpointsResponse
+	Activity       map[string][]ActivityRecord
 	FetchedAt      time.Time
 	FetchDuration  time.Duration
 	FetchErrors    int
 	ModelsCount    int
 	EndpointsCount int
+	ActivityErrors int
 }
 
 // Re-export client types for cache consumers
 type Model = client.Model
 type EndpointsResponse = client.EndpointsResponse
 type Endpoint = client.Endpoint
+type ActivityRecord = client.ActivityRecord
 
 type Cache struct {
-	mu       sync.RWMutex
-	data     *CachedData
-	client   *client.OpenRouterClient
-	interval time.Duration
-	stopCh   chan struct{}
-	logger   *slog.Logger
+	mu             sync.RWMutex
+	data           *CachedData
+	client         *client.OpenRouterClient
+	interval       time.Duration
+	stopCh         chan struct{}
+	logger         *slog.Logger
+	activityModels []string
+	sessionCookie  string
 }
 
 func New(c *client.OpenRouterClient, interval time.Duration, logger *slog.Logger) *Cache {
@@ -41,6 +46,11 @@ func New(c *client.OpenRouterClient, interval time.Duration, logger *slog.Logger
 		stopCh:   make(chan struct{}),
 		logger:   logger,
 	}
+}
+
+func (c *Cache) SetActivityConfig(models []string, sessionCookie string) {
+	c.activityModels = models
+	c.sessionCookie = sessionCookie
 }
 
 func (c *Cache) Start(ctx context.Context) error {
@@ -108,6 +118,17 @@ func (c *Cache) refresh(ctx context.Context) error {
 		FetchErrors:    result.Errors,
 		ModelsCount:    len(models),
 		EndpointsCount: totalEndpoints,
+	}
+
+	// Fetch activity data if configured
+	if len(c.activityModels) > 0 && c.sessionCookie != "" {
+		activityResult, err := c.client.FetchAllActivity(ctx, c.activityModels, c.sessionCookie)
+		if err != nil {
+			c.logger.Error("fetch activity failed", "error", err)
+		} else {
+			cached.Activity = activityResult.Activity
+			cached.ActivityErrors = activityResult.Errors
+		}
 	}
 
 	c.mu.Lock()

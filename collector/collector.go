@@ -35,6 +35,16 @@ func (c *OpenRouterCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- MetricModelsScraped
 	ch <- MetricEndpointsScraped
 	ch <- MetricScrapeTimestamp
+	ch <- MetricActivityRequests
+	ch <- MetricActivityPromptTokens
+	ch <- MetricActivityCompletionTokens
+	ch <- MetricActivityToolCalls
+	ch <- MetricActivityCacheHitTokens
+	ch <- MetricActivityReasoningTokens
+	ch <- MetricActivityReasoningRatio
+	ch <- MetricActivityScrapeDuration
+	ch <- MetricActivityScrapeErrors
+	ch <- MetricActivityScrapeTimestamp
 }
 
 func (c *OpenRouterCollector) Collect(ch chan<- prometheus.Metric) {
@@ -76,6 +86,28 @@ func (c *OpenRouterCollector) Collect(ch chan<- prometheus.Metric) {
 			seen[key] = true
 
 			c.emitEndpointMetrics(ch, modelID, ep)
+		}
+	}
+
+	// Activity metrics
+	if data.Activity != nil {
+		ch <- prometheus.MustNewConstMetric(MetricActivityScrapeErrors, prometheus.GaugeValue, float64(data.ActivityErrors))
+
+		for modelID, records := range data.Activity {
+			for _, r := range records {
+				date := strings.SplitN(r.Date, " ", 2)[0]
+				ch <- prometheus.MustNewConstMetric(MetricActivityRequests, prometheus.GaugeValue, float64(r.Count), modelID, date)
+				ch <- prometheus.MustNewConstMetric(MetricActivityPromptTokens, prometheus.GaugeValue, float64(r.TotalPromptTokens), modelID, date)
+				ch <- prometheus.MustNewConstMetric(MetricActivityCompletionTokens, prometheus.GaugeValue, float64(r.TotalCompletionTokens), modelID, date)
+				ch <- prometheus.MustNewConstMetric(MetricActivityToolCalls, prometheus.GaugeValue, float64(r.TotalToolCalls), modelID, date)
+				ch <- prometheus.MustNewConstMetric(MetricActivityCacheHitTokens, prometheus.GaugeValue, float64(r.TotalNativeTokensCached), modelID, date)
+				ch <- prometheus.MustNewConstMetric(MetricActivityReasoningTokens, prometheus.GaugeValue, float64(r.TotalNativeTokensReasoning), modelID, date)
+
+				if r.TotalCompletionTokens > 0 {
+					ratio := float64(r.TotalNativeTokensReasoning) / float64(r.TotalCompletionTokens)
+					ch <- prometheus.MustNewConstMetric(MetricActivityReasoningRatio, prometheus.GaugeValue, ratio, modelID, date)
+				}
+			}
 		}
 	}
 }

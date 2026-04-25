@@ -31,6 +31,11 @@ func main() {
 	apiClient := client.NewClient(cfg.BaseURL, cfg.APIKey, cfg.APITimeout, cfg.MaxConcurrency)
 	c := cache.New(apiClient, cfg.ScrapeInterval, logger)
 
+	if len(cfg.ActivityModels) > 0 && cfg.ActivitySessionCookie != "" {
+		c.SetActivityConfig(cfg.ActivityModels, cfg.ActivitySessionCookie)
+		logger.Info("activity scraping configured", "models", cfg.ActivityModels)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
